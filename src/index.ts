@@ -41,7 +41,7 @@ export function createBridge<Messages extends Record<string, unknown>>(namespace
       type: direction === 'to-page' ? `__to-page__${type}` : `__to-content__${type}`,
       payload,
     };
-    window.postMessage(message, '*');
+    window.postMessage(message, window.location.origin);
   };
 
   const handleIncomingMessage = (event: MessageEvent): void => {

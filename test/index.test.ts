@@ -66,7 +66,7 @@ describe('content-script-bridge', () => {
       expect(message.__bridge).toBe('my-extension');
       expect(message.type).toBe('__to-page__greet');
       expect(message.payload).toBe('Hello World');
-      expect(targetOrigin).toBe('*');
+      expect(targetOrigin).toBe(window.location.origin);
     });
 
     it('should send messages to content script with correct namespace', (): void => {
@@ -79,7 +79,7 @@ describe('content-script-bridge', () => {
       expect(message.__bridge).toBe('my-extension');
       expect(message.type).toBe('__to-content__response');
       expect(message.payload).toEqual({ status: 'ok' });
-      expect(targetOrigin).toBe('*');
+      expect(targetOrigin).toBe(window.location.origin);
     });
 
     it('should ignore messages from other namespaces', (): void => {
@@ -175,6 +175,150 @@ describe('content-script-bridge', () => {
 
       expect(handler1).not.toHaveBeenCalled();
       expect(handler2).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should ignore messages where event.source !== window', (): void => {
+      const bridge = createBridge('my-extension', 'page');
+      const handler = vi.fn();
+
+      bridge.onMessage('test' as keyof { test: string }, handler);
+
+      // Simulate a message from a different source (e.g., an iframe)
+      const handlers = mockAddEventListener.mock.calls.filter(call => call[0] === 'message');
+      handlers.forEach(call => {
+        const messageHandler = call[1] as (event: MessageEvent) => void;
+        const event = {
+          data: {
+            __bridge: 'my-extension',
+            type: '__to-page__test',
+            payload: 'from iframe',
+          },
+          origin: '*',
+          source: {} as Window, // different source, not window
+        } as unknown as MessageEvent;
+        messageHandler(event);
+      });
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should ignore messages with null data', (): void => {
+      const bridge = createBridge('my-extension', 'page');
+      const handler = vi.fn();
+
+      bridge.onMessage('test' as keyof { test: string }, handler);
+
+      const handlers = mockAddEventListener.mock.calls.filter(call => call[0] === 'message');
+      handlers.forEach(call => {
+        const messageHandler = call[1] as (event: MessageEvent) => void;
+        const event = {
+          data: null,
+          origin: '*',
+          source: window,
+        } as unknown as MessageEvent;
+        messageHandler(event);
+      });
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should ignore messages with non-object data', (): void => {
+      const bridge = createBridge('my-extension', 'page');
+      const handler = vi.fn();
+
+      bridge.onMessage('test' as keyof { test: string }, handler);
+
+      const handlers = mockAddEventListener.mock.calls.filter(call => call[0] === 'message');
+      handlers.forEach(call => {
+        const messageHandler = call[1] as (event: MessageEvent) => void;
+        const event = {
+          data: 'just a string',
+          origin: '*',
+          source: window,
+        } as unknown as MessageEvent;
+        messageHandler(event);
+      });
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should ignore messages with missing __bridge property', (): void => {
+      const bridge = createBridge('my-extension', 'page');
+      const handler = vi.fn();
+
+      bridge.onMessage('test' as keyof { test: string }, handler);
+
+      simulateMessage({
+        type: '__to-page__test',
+        payload: 'no bridge',
+      });
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should ignore messages with missing type property', (): void => {
+      const bridge = createBridge('my-extension', 'page');
+      const handler = vi.fn();
+
+      bridge.onMessage('test' as keyof { test: string }, handler);
+
+      const handlers = mockAddEventListener.mock.calls.filter(call => call[0] === 'message');
+      handlers.forEach(call => {
+        const messageHandler = call[1] as (event: MessageEvent) => void;
+        const event = {
+          data: {
+            __bridge: 'my-extension',
+            payload: 'no type',
+          },
+          origin: '*',
+          source: window,
+        } as unknown as MessageEvent;
+        messageHandler(event);
+      });
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should ignore messages with non-string type', (): void => {
+      const bridge = createBridge('my-extension', 'page');
+      const handler = vi.fn();
+
+      bridge.onMessage('test' as keyof { test: string }, handler);
+
+      const handlers = mockAddEventListener.mock.calls.filter(call => call[0] === 'message');
+      handlers.forEach(call => {
+        const messageHandler = call[1] as (event: MessageEvent) => void;
+        const event = {
+          data: {
+            __bridge: 'my-extension',
+            type: 42,
+            payload: 'numeric type',
+          },
+          origin: '*',
+          source: window,
+        } as unknown as MessageEvent;
+        messageHandler(event);
+      });
+
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('should ignore messages with empty type after prefix stripping', (): void => {
+      const bridge = createBridge('my-extension', 'page');
+      const handler = vi.fn();
+
+      bridge.onMessage('test' as keyof { test: string }, handler);
+
+      // Send a message where type is just the prefix with nothing after it
+      simulateMessage({
+        __bridge: 'my-extension',
+        type: '__to-page__',
+        payload: 'empty type after strip',
+      });
+
+      expect(handler).not.toHaveBeenCalled();
     });
   });
 

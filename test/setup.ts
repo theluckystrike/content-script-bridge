@@ -107,6 +107,9 @@ export function resetChromeMocks(): void {
 
 // Mock window and document globals for browser API tests
 const windowMock = {
+  location: {
+    origin: 'http://localhost:3000',
+  },
   postMessage: vi.fn(),
   addEventListener: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
     if (!eventListeners.has(event)) {
