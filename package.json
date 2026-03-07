@@ -1,0 +1,32 @@
+{
+  "name": "@theluckystrike/content-script-bridge",
+  "version": "1.0.0",
+  "description": "Type-safe bridge between content scripts and page context",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/ test/ --ext .ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["chrome-extension", "chrome", "browser-extension", "typescript"],
+  "author": "theluckystrike",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theluckystrike/content-script-bridge"
+  },
+  "homepage": "https://zovo.one",
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "eslint": "^8.57.0",
+    "chrome-types": "^0.1.0"
+  }
+}
