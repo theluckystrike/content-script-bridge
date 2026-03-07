@@ -45,10 +45,18 @@ export function createBridge<Messages extends Record<string, unknown>>(namespace
   };
 
   const handleIncomingMessage = (event: MessageEvent): void => {
-    const data = event.data as BridgeMessage | undefined;
+    if (event.source !== window) {
+      return;
+    }
+
+    const data = event.data;
+
+    if (!data || typeof data !== 'object' || typeof data.__bridge !== 'string' || typeof data.type !== 'string') {
+      return;
+    }
 
     // Ignore messages without our bridge namespace
-    if (!data || data.__bridge !== namespace) {
+    if (data.__bridge !== namespace) {
       return;
     }
 
@@ -127,6 +135,6 @@ export function injectScript(scriptUrl: string): HTMLScriptElement {
   script.src = scriptUrl;
   script.type = 'text/javascript';
   script.async = true;
-  document.head.appendChild(script);
+  (document.head || document.documentElement).appendChild(script);
   return script;
 }
