@@ -3,6 +3,8 @@
  * Type-safe bridge for communication between content scripts and page context in Chrome extensions
  */
 
+export type BridgeSide = 'page' | 'content-script';
+
 export interface BridgeMessage<T = unknown> {
   __bridge: string;
   type: string;
@@ -24,10 +26,14 @@ interface ListenerEntry {
 /**
  * Creates a type-safe bridge for communication between content scripts and page context
  * @param namespace Unique identifier to prevent message collisions
+ * @param side Which side this bridge instance lives on — determines which messages onMessage receives
  */
-export function createBridge<Messages extends Record<string, unknown>>(namespace: string): Bridge<Messages> {
+export function createBridge<Messages extends Record<string, unknown>>(namespace: string, side: BridgeSide): Bridge<Messages> {
   const listeners: ListenerEntry[] = [];
   let messageHandler: ((event: MessageEvent) => void) | null = null;
+
+  // Determine which prefix this side should listen to
+  const listenPrefix = side === 'page' ? '__to-page__' : '__to-content__';
 
   const sendMessage = (direction: 'to-page' | 'to-content', type: string, payload: unknown): void => {
     const message: BridgeMessage = {
@@ -40,18 +46,18 @@ export function createBridge<Messages extends Record<string, unknown>>(namespace
 
   const handleIncomingMessage = (event: MessageEvent): void => {
     const data = event.data as BridgeMessage | undefined;
-    
+
     // Ignore messages without our bridge namespace
     if (!data || data.__bridge !== namespace) {
       return;
     }
 
-    // Extract the actual message type
-    const messageType = data.type.startsWith('__to-page__')
-      ? data.type.replace('__to-page__', '')
-      : data.type.startsWith('__to-content__')
-        ? data.type.replace('__to-content__', '')
-        : null;
+    // Only process messages directed at this side
+    if (!data.type.startsWith(listenPrefix)) {
+      return;
+    }
+
+    const messageType = data.type.slice(listenPrefix.length);
 
     if (!messageType) {
       return;
