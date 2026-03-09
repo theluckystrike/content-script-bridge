@@ -35,6 +35,9 @@
     "url": "https://github.com/theluckystrike/content-script-bridge"
   },
   "homepage": "https://zovo.one",
+  "bugs": {
+    "url": "https://github.com/theluckystrike/content-script-bridge/issues"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
