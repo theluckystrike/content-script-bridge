@@ -1,10 +1,20 @@
 # @theluckystrike/content-script-bridge
 
-Type-safe bridge for communication between content scripts and page context in Chrome extensions.
+<div align="center">
+
+![Zovo](https://img.shields.io/badge/⚡-Zovo-blue?style=for-the-badge&labelColor=1a1a2e)
+
+**Type-safe bridge for communication between content scripts and page context in Chrome extensions.**
 
 [![npm version](https://img.shields.io/npm/v/@theluckystrike/content-script-bridge)](https://www.npmjs.com/package/@theluckystrike/content-script-bridge)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
+
+**Built with ❤️ by [theluckystrike](https://github.com/theluckystrike) at [Zovo](https://zovo.one)**
+
+</div>
 
 ## Why This Library?
 
@@ -466,6 +476,12 @@ bridge.onMessage('dataResponse', (payload) => {
 
 Requires support for `window.postMessage` and ES2015+ features.
 
+## Zovo
+
+This library is maintained by **[theluckystrike](https://github.com/theluckystrike)** and is part of the [Zovo](https://zovo.one) ecosystem of open-source tools for browser extension development.
+
+Visit [zovo.one](https://zovo.one) to discover more extensions and developer tools.
+
 ## License
 
-MIT - Built by [theluckystrike](https://github.com/theluckystrike) | [zovo.one](https://zovo.one)
+MIT © [theluckystrike](https://github.com/theluckystrike) | [Zovo](https://zovo.one)
